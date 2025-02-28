@@ -67,9 +67,13 @@ export default function NewTicketPage() {
     setIsSubmitting(true);
     
     try {
-      // Create new ticket
+      // Create new ticket - ensuring all required fields are passed
       const newTicket = createTicket({
-        ...data,
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        gcpService: data.gcpService,
+        createdBy: data.createdBy,
         status: "open",
       });
       
