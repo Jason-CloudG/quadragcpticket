@@ -164,18 +164,49 @@ export const mockTickets: Ticket[] = [
   }
 ];
 
-// Ticket service functions
-let tickets = [...mockTickets];
+// Helper function to initialize localStorage
+const initializeTickets = () => {
+  // Check if tickets already exist in localStorage
+  const storedTickets = localStorage.getItem('gcp-tickets');
+  if (!storedTickets) {
+    // Initialize with mock data if no tickets exist
+    localStorage.setItem('gcp-tickets', JSON.stringify(mockTickets));
+    return [...mockTickets];
+  }
+  return JSON.parse(storedTickets);
+};
 
+// Get tickets from localStorage
+const getStoredTickets = (): Ticket[] => {
+  try {
+    return initializeTickets();
+  } catch (error) {
+    console.error('Error retrieving tickets from localStorage:', error);
+    return [...mockTickets]; // Fallback to mock data
+  }
+};
+
+// Save tickets to localStorage
+const saveTickets = (tickets: Ticket[]) => {
+  try {
+    localStorage.setItem('gcp-tickets', JSON.stringify(tickets));
+  } catch (error) {
+    console.error('Error saving tickets to localStorage:', error);
+  }
+};
+
+// Ticket service functions
 export const getAllTickets = (): Ticket[] => {
-  return tickets;
+  return getStoredTickets();
 };
 
 export const getTicketById = (id: string): Ticket | undefined => {
+  const tickets = getStoredTickets();
   return tickets.find(ticket => ticket.id === id);
 };
 
 export const createTicket = (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'comments'>): Ticket => {
+  const tickets = getStoredTickets();
   const now = new Date().toISOString();
   const newTicket: Ticket = {
     ...ticket,
@@ -185,11 +216,13 @@ export const createTicket = (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedA
     comments: []
   };
   
-  tickets = [newTicket, ...tickets];
+  const updatedTickets = [newTicket, ...tickets];
+  saveTickets(updatedTickets);
   return newTicket;
 };
 
 export const updateTicket = (id: string, updates: Partial<Ticket>): Ticket | undefined => {
+  const tickets = getStoredTickets();
   const index = tickets.findIndex(ticket => ticket.id === id);
   
   if (index !== -1) {
@@ -200,6 +233,7 @@ export const updateTicket = (id: string, updates: Partial<Ticket>): Ticket | und
     };
     
     tickets[index] = updatedTicket;
+    saveTickets(tickets);
     return updatedTicket;
   }
   
@@ -207,9 +241,10 @@ export const updateTicket = (id: string, updates: Partial<Ticket>): Ticket | und
 };
 
 export const addComment = (ticketId: string, content: string, author: string): Comment | undefined => {
-  const ticket = tickets.find(t => t.id === ticketId);
+  const tickets = getStoredTickets();
+  const ticketIndex = tickets.findIndex(t => t.id === ticketId);
   
-  if (!ticket) return undefined;
+  if (ticketIndex === -1) return undefined;
   
   const newComment: Comment = {
     id: `C-${Math.floor(100 + Math.random() * 900)}`,
@@ -219,13 +254,15 @@ export const addComment = (ticketId: string, content: string, author: string): C
     createdAt: new Date().toISOString()
   };
   
-  ticket.comments.push(newComment);
-  ticket.updatedAt = new Date().toISOString();
+  tickets[ticketIndex].comments.push(newComment);
+  tickets[ticketIndex].updatedAt = new Date().toISOString();
+  saveTickets(tickets);
   
   return newComment;
 };
 
 export const searchTickets = (query: string): Ticket[] => {
+  const tickets = getStoredTickets();
   const searchTerm = query.toLowerCase();
   return tickets.filter(ticket => 
     ticket.title.toLowerCase().includes(searchTerm) || 
@@ -240,6 +277,7 @@ export const filterTickets = (filters: {
   priority?: Ticket['priority'][];
   gcpService?: string[];
 }): Ticket[] => {
+  const tickets = getStoredTickets();
   return tickets.filter(ticket => {
     let matches = true;
     
