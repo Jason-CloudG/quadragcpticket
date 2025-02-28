@@ -1,6 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "./components/ui/theme-provider";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import Index from "./pages/Index";
 import TicketsPage from "./pages/TicketsPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
