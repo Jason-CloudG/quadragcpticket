@@ -1,16 +1,19 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X } from 'lucide-react';
+import { 
+  Menu, 
+  X, 
+  Ticket, 
+  TicketPlus,
+  Home
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   
   useEffect(() => {
@@ -23,18 +26,10 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/blogs?search=${encodeURIComponent(searchQuery)}`;
-    }
-  };
-
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Blogs', path: '/blogs' },
-    { name: 'Categories', path: '/categories' },
-    { name: 'About', path: '/about' },
+    { name: 'Home', path: '/', icon: <Home className="h-4 w-4 mr-2" /> },
+    { name: 'Tickets', path: '/tickets', icon: <Ticket className="h-4 w-4 mr-2" /> },
+    { name: 'Create Ticket', path: '/tickets/new', icon: <TicketPlus className="h-4 w-4 mr-2" /> },
   ];
 
   const isActive = (path: string) => {
@@ -58,9 +53,10 @@ export function Navbar() {
           <div className="flex items-center gap-2">
             <Link 
               to="/" 
-              className="text-xl md:text-2xl font-heading font-bold tracking-tight transition-colors hover:text-primary"
+              className="text-xl md:text-2xl font-bold tracking-tight transition-colors hover:text-primary flex items-center"
             >
-              GCloud<span className="text-primary">Blogs</span>
+              <Ticket className="h-6 w-6 mr-2 text-primary" />
+              GCP Tickets
             </Link>
           </div>
           
@@ -70,50 +66,24 @@ export function Navbar() {
                 key={link.path}
                 to={link.path}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary relative py-2",
+                  "text-sm font-medium transition-colors hover:text-primary relative py-2 flex items-center",
                   isActive(link.path) 
                     ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:transform after:scale-x-100 after:transition-transform" 
                     : "text-foreground/80 hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-primary hover:after:transform hover:after:scale-x-0 hover:after:transition-transform hover:after:origin-center hover:after:duration-300 hover:after:ease-in-out hover:after:scale-x-100"
                 )}
               >
+                {link.icon}
                 {link.name}
               </Link>
             ))}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="ml-2"
-            >
-              <Search className="h-5 w-5" />
-              <span className="sr-only">Search</span>
-            </Button>
+            
+            <Link to="/tickets/new">
+              <Button size="sm" className="ml-2">
+                <TicketPlus className="h-4 w-4 mr-2" />
+                New Ticket
+              </Button>
+            </Link>
           </nav>
-          
-          {searchOpen && (
-            <div className="absolute inset-x-0 top-full mt-px bg-white dark:bg-gray-900 border-b border-border p-4 animate-fade-in">
-              <form onSubmit={handleSearch} className="max-w-md mx-auto flex items-center gap-2">
-                <Input
-                  type="search"
-                  placeholder="Search blogs..."
-                  className="flex-1"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                />
-                <Button type="submit">Search</Button>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setSearchOpen(false)}
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close</span>
-                </Button>
-              </form>
-            </div>
-          )}
           
           <Sheet>
             <SheetTrigger asChild>
@@ -129,7 +99,7 @@ export function Navbar() {
                     key={link.path}
                     to={link.path}
                     className={cn(
-                      "text-lg font-medium transition-colors hover:text-primary py-2",
+                      "text-lg font-medium transition-colors hover:text-primary py-2 flex items-center",
                       isActive(link.path) ? "text-primary" : "text-foreground"
                     )}
                     onClick={(e) => {
@@ -140,20 +110,17 @@ export function Navbar() {
                       }
                     }}
                   >
+                    {link.icon}
                     {link.name}
                   </Link>
                 ))}
                 <div className="mt-4 pt-4 border-t">
-                  <form onSubmit={handleSearch} className="flex items-center gap-2">
-                    <Input
-                      type="search"
-                      placeholder="Search blogs..."
-                      className="flex-1"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <Button type="submit">Search</Button>
-                  </form>
+                  <Link to="/tickets/new" className="w-full">
+                    <Button className="w-full">
+                      <TicketPlus className="h-4 w-4 mr-2" />
+                      Create New Ticket
+                    </Button>
+                  </Link>
                 </div>
               </nav>
             </SheetContent>

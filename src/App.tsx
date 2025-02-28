@@ -8,10 +8,9 @@ import { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
-import BlogsPage from "./pages/BlogsPage";
-import BlogPost from "./pages/BlogPost";
-import CategoriesPage from "./pages/CategoriesPage";
-import AboutPage from "./pages/AboutPage";
+import TicketsPage from "./pages/TicketsPage";
+import NewTicketPage from "./pages/NewTicketPage";
+import TicketDetailPage from "./pages/TicketDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,11 +41,9 @@ const App = () => {
           <Navbar />
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/blogs" element={<BlogsPage />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/categories/:category" element={<BlogsPage />} />
-            <Route path="/about" element={<AboutPage />} />
+            <Route path="/tickets" element={<TicketsPage />} />
+            <Route path="/tickets/new" element={<NewTicketPage />} />
+            <Route path="/tickets/:id" element={<TicketDetailPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
