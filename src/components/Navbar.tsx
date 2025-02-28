@@ -6,7 +6,8 @@ import {
   X, 
   Ticket, 
   TicketPlus,
-  Home
+  Home,
+  ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   
   useEffect(() => {
@@ -26,10 +28,23 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Check if user is logged in as admin
+    const adminAuth = localStorage.getItem('adminAuth');
+    setIsAdmin(adminAuth === 'true');
+  }, [location.pathname]); // Re-check when route changes
+
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="h-4 w-4 mr-2" /> },
     { name: 'Tickets', path: '/tickets', icon: <Ticket className="h-4 w-4 mr-2" /> },
     { name: 'Create Ticket', path: '/tickets/new', icon: <TicketPlus className="h-4 w-4 mr-2" /> },
+  ];
+
+  // Admin links - only shown when admin is logged in
+  const adminLinks = isAdmin ? [
+    { name: 'Admin Dashboard', path: '/admin/dashboard', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
+  ] : [
+    { name: 'Admin Login', path: '/admin/login', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
   ];
 
   const isActive = (path: string) => {
@@ -62,6 +77,22 @@ export function Navbar() {
           
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary relative py-2 flex items-center",
+                  isActive(link.path) 
+                    ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:transform after:scale-x-100 after:transition-transform" 
+                    : "text-foreground/80 hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-primary hover:after:transform hover:after:scale-x-0 hover:after:transition-transform hover:after:origin-center hover:after:duration-300 hover:after:ease-in-out hover:after:scale-x-100"
+                )}
+              >
+                {link.icon}
+                {link.name}
+              </Link>
+            ))}
+            
+            {adminLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
@@ -114,6 +145,28 @@ export function Navbar() {
                     {link.name}
                   </Link>
                 ))}
+                
+                {adminLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={cn(
+                      "text-lg font-medium transition-colors hover:text-primary py-2 flex items-center",
+                      isActive(link.path) ? "text-primary" : "text-foreground"
+                    )}
+                    onClick={(e) => {
+                      const sheet = document.querySelector('[data-state="open"]');
+                      if (sheet) {
+                        const closeButton = sheet.querySelector('button[data-close]') as HTMLButtonElement;
+                        if (closeButton) closeButton.click();
+                      }
+                    }}
+                  >
+                    {link.icon}
+                    {link.name}
+                  </Link>
+                ))}
+                
                 <div className="mt-4 pt-4 border-t">
                   <Link to="/tickets/new" className="w-full">
                     <Button className="w-full">
