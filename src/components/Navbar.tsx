@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -29,10 +28,9 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    // Check if user is logged in as admin
     const adminAuth = localStorage.getItem('adminAuth');
     setIsAdmin(adminAuth === 'true');
-  }, [location.pathname]); // Re-check when route changes
+  }, [location.pathname]);
 
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="h-4 w-4 mr-2" /> },
@@ -40,7 +38,6 @@ export function Navbar() {
     { name: 'Create Ticket', path: '/tickets/new', icon: <TicketPlus className="h-4 w-4 mr-2" /> },
   ];
 
-  // Admin links - only shown when admin is logged in
   const adminLinks = isAdmin ? [
     { name: 'Admin Dashboard', path: '/admin/dashboard', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
   ] : [
@@ -70,9 +67,8 @@ export function Navbar() {
               to="/" 
               className="text-xl md:text-2xl font-bold tracking-tight transition-colors hover:text-primary flex items-center"
             >
-              {/* Replace the Ticket icon with your custom image */}
               <img 
-                src="/your-logo.png" 
+                src="/lovable-uploads/7be45ebf-5bc1-4395-8507-3cb8b363288d.png" 
                 alt="GCP Tickets Logo" 
                 className="h-8 w-8 mr-2"
               />
