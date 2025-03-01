@@ -70,7 +70,12 @@ export function Navbar() {
               to="/" 
               className="text-xl md:text-2xl font-bold tracking-tight transition-colors hover:text-primary flex items-center"
             >
-              <Ticket className="h-6 w-6 mr-2 text-primary" />
+              {/* Replace the Ticket icon with your custom image */}
+              <img 
+                src="/your-logo.png" 
+                alt="GCP Tickets Logo" 
+                className="h-8 w-8 mr-2"
+              />
               GCP Tickets
             </Link>
           </div>
