@@ -2,12 +2,12 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, type ThemeProviderProps as NextThemesProviderProps } from "next-themes"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
 
 // Define the Attribute type to match next-themes expectations
-type Attribute = string | 'class' | 'data-theme' | 'data-mode'
+type Attribute = 'class' | 'data-theme' | 'data-mode'
 
-// Define our own ThemeProviderProps since we can't import from next-themes/dist/types
+// Define our own ThemeProviderProps to match next-themes expectations
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: string;
@@ -17,7 +17,7 @@ type ThemeProviderProps = {
   enableSystem?: boolean;
   disableTransitionOnChange?: boolean;
   enableColorScheme?: boolean;
-  attribute?: Attribute | Attribute[]; // Fixed type to match next-themes expectations
+  attribute?: Attribute | Attribute[]; // Properly typed to match next-themes
 }
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
