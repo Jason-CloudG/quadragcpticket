@@ -14,7 +14,7 @@ type ThemeProviderProps = {
   enableSystem?: boolean;
   disableTransitionOnChange?: boolean;
   enableColorScheme?: boolean;
-  attribute?: string | string[];
+  attribute?: string | 'class' | 'data-theme'; // Fixed type to be more specific
 }
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
