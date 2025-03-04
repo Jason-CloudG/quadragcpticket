@@ -15,7 +15,8 @@ import {
   SearchCheck,
   ClipboardList,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  Phone
 } from "lucide-react";
 
 export default function Index() {
@@ -146,13 +147,17 @@ export default function Index() {
                 Create a ticket and our team will help resolve your GCP issues
               </CardDescription>
             </CardHeader>
-            <CardFooter className="flex justify-center pb-6 relative z-10">
-              <Link to="/tickets/new">
+            <CardFooter className="flex flex-col items-center pb-6 relative z-10">
+              <Link to="/tickets/new" className="mb-4">
                 <Button className="gap-2">
                   Create New Ticket
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
+              <div className="flex items-center justify-center text-sm text-muted-foreground mt-2">
+                <Phone className="h-4 w-4 mr-2 text-primary" />
+                <p>For business requirements, contact our sales team: <span className="font-medium text-primary">+91 9688989687</span></p>
+              </div>
             </CardFooter>
           </Card>
         </div>
