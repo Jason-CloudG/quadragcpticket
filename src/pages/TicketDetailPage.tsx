@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
@@ -50,7 +49,15 @@ import {
   Edit,
   Clock,
   Calendar,
+  UserPlus,
 } from "lucide-react";
+
+const supportTeam = [
+  "support@gcp-team.com",
+  "devops@gcp-team.com",
+  "iam@gcp-team.com",
+  "network@gcp-team.com"
+];
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -64,14 +71,22 @@ export default function TicketDetailPage() {
   const [userEmail, setUserEmail] = useState("");
   const [showUpdateStatus, setShowUpdateStatus] = useState(false);
   const [newStatus, setNewStatus] = useState<Ticket["status"]>("open");
+  const [showAssignTicket, setShowAssignTicket] = useState(false);
+  const [assigneeEmail, setAssigneeEmail] = useState("");
+  const [customEmail, setCustomEmail] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   
   useEffect(() => {
+    const adminAuth = localStorage.getItem("adminAuth") === "true";
+    setIsAdmin(adminAuth);
+    
     if (id) {
       const fetchedTicket = getTicketById(id);
       
       if (fetchedTicket) {
         setTicket(fetchedTicket);
         setNewStatus(fetchedTicket.status);
+        setAssigneeEmail(fetchedTicket.assignedTo || "");
       } else {
         navigate("/not-found", { replace: true });
       }
@@ -101,13 +116,11 @@ export default function TicketDetailPage() {
     try {
       addComment(ticket.id, commentText, userEmail);
       
-      // Refresh ticket data
       const updatedTicket = getTicketById(ticket.id);
       if (updatedTicket) {
         setTicket(updatedTicket);
       }
       
-      // Reset form
       setCommentText("");
       
       toast({
@@ -146,6 +159,57 @@ export default function TicketDetailPage() {
       toast({
         title: "Error updating status",
         description: "There was a problem updating the ticket status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleAssignTicket = () => {
+    if (!ticket) return;
+    
+    const emailToAssign = assigneeEmail === "custom" ? customEmail : assigneeEmail;
+    
+    if (assigneeEmail === "custom" && (!customEmail || !customEmail.includes('@'))) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const updatedTicket = updateTicket(ticket.id, { 
+        assignedTo: emailToAssign || undefined,
+        status: emailToAssign ? "in-progress" : ticket.status
+      });
+      
+      if (updatedTicket) {
+        setTicket(updatedTicket);
+        setShowAssignTicket(false);
+        
+        toast({
+          title: emailToAssign ? "Ticket assigned" : "Assignment removed",
+          description: emailToAssign ? `Ticket assigned to ${emailToAssign}` : "Ticket is now unassigned",
+        });
+        
+        if (emailToAssign) {
+          addComment(
+            ticket.id,
+            `Ticket assigned to ${emailToAssign}`,
+            "system"
+          );
+          const refreshedTicket = getTicketById(ticket.id);
+          if (refreshedTicket) {
+            setTicket(refreshedTicket);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error assigning ticket:", error);
+      toast({
+        title: "Error assigning ticket",
+        description: "There was a problem assigning the ticket. Please try again.",
         variant: "destructive",
       });
     }
@@ -354,17 +418,81 @@ export default function TicketDetailPage() {
                   </div>
                 </div>
                 
-                {ticket.assignedTo && (
-                  <div>
+                <div>
+                  <div className="flex items-center justify-between">
                     <div className="text-muted-foreground mb-1">Assigned To</div>
+                    {isAdmin && (
+                      <Dialog open={showAssignTicket} onOpenChange={setShowAssignTicket}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="ghost">
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Assign Ticket</DialogTitle>
+                            <DialogDescription>
+                              Assign this ticket to a team member or add a custom email
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-4 space-y-4">
+                            <Select 
+                              value={assigneeEmail} 
+                              onValueChange={setAssigneeEmail}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select team member" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">Unassigned</SelectItem>
+                                {supportTeam.map(email => (
+                                  <SelectItem key={email} value={email}>{email}</SelectItem>
+                                ))}
+                                <SelectItem value="custom">Add Custom Email</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            {assigneeEmail === "custom" && (
+                              <div>
+                                <label className="text-sm font-medium block mb-2">
+                                  Enter Email
+                                </label>
+                                <Input 
+                                  type="email"
+                                  placeholder="team.member@example.com"
+                                  value={customEmail}
+                                  onChange={(e) => setCustomEmail(e.target.value)}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <DialogFooter>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setShowAssignTicket(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button onClick={handleAssignTicket}>
+                              Assign Ticket
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
+                  
+                  {ticket.assignedTo ? (
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">{getInitials(ticket.assignedTo)}</AvatarFallback>
                       </Avatar>
                       <span>{ticket.assignedTo}</span>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-muted-foreground text-sm">Not assigned</div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

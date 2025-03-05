@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ import {
   getAllTickets,
   getTicketById,
   updateTicket,
+  addComment,
   Ticket
 } from "@/lib/ticketData";
 import { useToast } from "@/hooks/use-toast";
@@ -41,7 +41,8 @@ import {
   UserCog,
   LogOut,
   Ticket as TicketIcon,
-  PieChart
+  PieChart,
+  Bell
 } from "lucide-react";
 import {
   Select,
@@ -53,24 +54,39 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
+export const supportTeam = [
+  "support@gcp-team.com",
+  "devops@gcp-team.com",
+  "iam@gcp-team.com",
+  "network@gcp-team.com"
+];
+
 export default function AdminDashboardPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [customEmail, setCustomEmail] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  const [newTickets, setNewTickets] = useState<Ticket[]>([]);
+  
   useEffect(() => {
-    // Check if admin is logged in
     const isAdmin = localStorage.getItem("adminAuth") === "true";
     if (!isAdmin) {
       navigate("/admin/login");
       return;
     }
     
-    // Load tickets
-    setTickets(getAllTickets());
+    const allTickets = getAllTickets();
+    setTickets(allTickets);
+    
+    const newTicketsFiltered = allTickets.filter(ticket => 
+      ticket.status === 'open' && ticket.comments.length === 0
+    );
+    setNewTickets(newTicketsFiltered);
   }, [navigate]);
   
   const handleLogout = () => {
@@ -85,40 +101,71 @@ export default function AdminDashboardPage() {
   const handleStatusChange = (ticketId: string, newStatus: Ticket["status"]) => {
     const updatedTicket = updateTicket(ticketId, { status: newStatus });
     if (updatedTicket) {
+      addComment(
+        ticketId,
+        `Status changed to ${newStatus}`,
+        "system"
+      );
+      
       toast({
         title: "Ticket updated",
         description: `Ticket ${ticketId} status changed to ${newStatus}`,
       });
       
-      // Refresh tickets list
       setTickets(getAllTickets());
       
-      // Update selected ticket if it's the one being modified
       if (selectedTicket && selectedTicket.id === ticketId) {
-        setSelectedTicket(updatedTicket);
+        const refreshedTicket = getTicketById(ticketId);
+        if (refreshedTicket) {
+          setSelectedTicket(refreshedTicket);
+        }
       }
     }
   };
   
   const handleAssignTicket = (ticketId: string, assignee: string) => {
+    const emailToAssign = assignee === "custom" ? customEmail : assignee;
+    
+    if (assignee === "custom" && (!customEmail || !customEmail.includes('@'))) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const updatedTicket = updateTicket(ticketId, { 
-      assignedTo: assignee,
-      status: 'in-progress' 
+      assignedTo: emailToAssign || undefined,
+      status: emailToAssign ? 'in-progress' : 'open' 
     });
     
     if (updatedTicket) {
+      addComment(
+        ticketId,
+        emailToAssign 
+          ? `Ticket assigned to ${emailToAssign}`
+          : `Ticket unassigned`,
+        "system"
+      );
+      
       toast({
         title: "Ticket assigned",
-        description: `Ticket ${ticketId} assigned to ${assignee}`,
+        description: emailToAssign 
+          ? `Ticket ${ticketId} assigned to ${emailToAssign}`
+          : `Ticket ${ticketId} is now unassigned`,
       });
       
-      // Refresh tickets list
       setTickets(getAllTickets());
       
-      // Update selected ticket if it's the one being modified
       if (selectedTicket && selectedTicket.id === ticketId) {
-        setSelectedTicket(updatedTicket);
+        const refreshedTicket = getTicketById(ticketId);
+        if (refreshedTicket) {
+          setSelectedTicket(refreshedTicket);
+        }
       }
+      
+      setCustomEmail("");
     }
   };
   
@@ -137,13 +184,14 @@ export default function AdminDashboardPage() {
     ticket.createdBy.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  // Support team members (dummy data for demo)
-  const supportTeam = [
-    "support@gcp-team.com",
-    "devops@gcp-team.com",
-    "iam@gcp-team.com",
-    "network@gcp-team.com"
-  ];
+  const markNotificationsAsRead = () => {
+    setNewTickets([]);
+    setShowNotifications(false);
+    toast({
+      title: "Notifications cleared",
+      description: "All ticket notifications have been marked as read",
+    });
+  };
   
   return (
     <div className="container mx-auto py-8 px-4">
@@ -155,10 +203,69 @@ export default function AdminDashboardPage() {
             <p className="text-muted-foreground">GCP Support Ticket Management</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="relative"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell className="h-5 w-5" />
+              {newTickets.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {newTickets.length}
+                </span>
+              )}
+            </Button>
+            
+            {showNotifications && newTickets.length > 0 && (
+              <div className="absolute right-0 mt-2 w-80 bg-card border rounded-md shadow-lg z-10">
+                <div className="p-3 border-b">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium">New Tickets</h3>
+                    <Button variant="ghost" size="sm" onClick={markNotificationsAsRead}>
+                      Mark all read
+                    </Button>
+                  </div>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {newTickets.map(ticket => (
+                    <div 
+                      key={ticket.id} 
+                      className="p-3 border-b hover:bg-accent cursor-pointer"
+                      onClick={() => {
+                        setSelectedTicket(ticket);
+                        setActiveTab("manage");
+                        setShowNotifications(false);
+                      }}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="p-2 bg-primary/10 rounded-full">
+                          <TicketIcon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{ticket.id}: {ticket.title}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <TicketPriorityBadge priority={ticket.priority} />
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(ticket.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -430,7 +537,13 @@ export default function AdminDashboardPage() {
                       </label>
                       <Select 
                         value={selectedTicket.assignedTo || ""}
-                        onValueChange={(value) => handleAssignTicket(selectedTicket.id, value)}
+                        onValueChange={(value) => {
+                          if (value === "custom") {
+                            setCustomEmail("");
+                          } else {
+                            handleAssignTicket(selectedTicket.id, value);
+                          }
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select team member" />
@@ -440,9 +553,32 @@ export default function AdminDashboardPage() {
                           {supportTeam.map(email => (
                             <SelectItem key={email} value={email}>{email}</SelectItem>
                           ))}
+                          <SelectItem value="custom">Add Custom Email</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                    
+                    {selectedTicket.assignedTo === "custom" && (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Custom Email
+                        </label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="email"
+                            placeholder="team.member@example.com"
+                            value={customEmail}
+                            onChange={(e) => setCustomEmail(e.target.value)}
+                          />
+                          <Button 
+                            size="sm"
+                            onClick={() => handleAssignTicket(selectedTicket.id, "custom")}
+                          >
+                            Assign
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="pt-4">
                       <Button 

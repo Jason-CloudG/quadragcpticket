@@ -1,4 +1,3 @@
-
 export interface Ticket {
   id: string;
   title: string;
@@ -195,6 +194,40 @@ const saveTickets = (tickets: Ticket[]) => {
   }
 };
 
+// Send notification when a new ticket is created
+const sendTicketNotification = (ticket: Ticket) => {
+  try {
+    // Log the notification (in a real app, this would send an email or push notification)
+    console.log(`NEW TICKET NOTIFICATION: ${ticket.id} - ${ticket.title}`);
+    
+    // Check if notification API is available in the browser
+    if ("Notification" in window) {
+      // Check if permission is already granted
+      if (Notification.permission === "granted") {
+        new Notification("New Support Ticket", {
+          body: `Ticket ID: ${ticket.id}\nTitle: ${ticket.title}\nPriority: ${ticket.priority}`,
+        });
+      } 
+      // Check if permission hasn't been denied
+      else if (Notification.permission !== "denied") {
+        // Request permission and show notification if granted
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification("New Support Ticket", {
+              body: `Ticket ID: ${ticket.id}\nTitle: ${ticket.title}\nPriority: ${ticket.priority}`,
+            });
+          }
+        });
+      }
+    }
+    
+    // In a real application, you would make an API call to a notification service
+    // or send an email to the admin team here
+  } catch (error) {
+    console.error("Error sending notification:", error);
+  }
+};
+
 // Ticket service functions
 export const getAllTickets = (): Ticket[] => {
   return getStoredTickets();
@@ -218,6 +251,10 @@ export const createTicket = (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedA
   
   const updatedTickets = [newTicket, ...tickets];
   saveTickets(updatedTickets);
+  
+  // Send notification for the new ticket
+  sendTicketNotification(newTicket);
+  
   return newTicket;
 };
 
