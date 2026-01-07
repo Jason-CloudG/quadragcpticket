@@ -84,10 +84,10 @@ export default function AdminLoginPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
             <ShieldCheck className="h-6 w-6 text-primary" />
-            Admin Login
+            Login
           </CardTitle>
           <CardDescription>
-            Sign in to access the GCP Support admin dashboard
+            Sign in to access the GCP Support dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>
