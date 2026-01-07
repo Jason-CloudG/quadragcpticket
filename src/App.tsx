@@ -5,7 +5,7 @@ import Index from "./pages/Index";
 import TicketsPage from "./pages/TicketsPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import NewTicketPage from "./pages/NewTicketPage";
-import ClientLoginPage from "./pages/ClientLoginPage";
+
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import NotFound from "./pages/NotFound";
@@ -23,11 +23,10 @@ function App() {
         <main className="pt-20 min-h-screen">
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/login" element={<ClientLoginPage />} />
+            <Route path="/login" element={<AdminLoginPage />} />
             <Route path="/tickets" element={<TicketsPage />} />
             <Route path="/tickets/new" element={<NewTicketPage />} />
             <Route path="/tickets/:id" element={<TicketDetailPage />} />
-            <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/admin/dashboard" element={
               <ProtectedRoute>
                 <AdminDashboardPage />

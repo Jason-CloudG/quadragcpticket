@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils';
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -32,17 +31,12 @@ export function Navbar() {
 
   useEffect(() => {
     const adminAuth = localStorage.getItem('adminAuth');
-    const clientAuth = localStorage.getItem('clientAuth');
     setIsAdmin(adminAuth === 'true');
-    setIsClient(clientAuth === 'true');
   }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminAuth');
-    localStorage.removeItem('clientAuth');
-    localStorage.removeItem('clientEmail');
     setIsAdmin(false);
-    setIsClient(false);
     navigate('/');
   };
 
@@ -58,12 +52,8 @@ export function Navbar() {
         { name: 'Admin Dashboard', path: '/admin/dashboard', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
       ];
     }
-    if (isClient) {
-      return [];
-    }
     return [
-      { name: 'Client Login', path: '/login', icon: <User className="h-4 w-4 mr-2" /> },
-      { name: 'Admin Login', path: '/admin/login', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
+      { name: 'Login', path: '/login', icon: <User className="h-4 w-4 mr-2" /> }
     ];
   };
 
@@ -134,7 +124,7 @@ export function Navbar() {
               </Link>
             ))}
             
-            {(isAdmin || isClient) && (
+            {isAdmin && (
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -213,7 +203,7 @@ export function Navbar() {
                     </Button>
                   </Link>
                   
-                  {(isAdmin || isClient) && (
+                  {isAdmin && (
                     <Button 
                       variant="outline" 
                       className="w-full"
