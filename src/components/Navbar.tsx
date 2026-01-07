@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, 
-  X, 
   Ticket, 
   TicketPlus,
   Home,
-  ShieldCheck
+  ShieldCheck,
+  User,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -15,7 +16,9 @@ import { cn } from '@/lib/utils';
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -29,8 +32,19 @@ export function Navbar() {
 
   useEffect(() => {
     const adminAuth = localStorage.getItem('adminAuth');
+    const clientAuth = localStorage.getItem('clientAuth');
     setIsAdmin(adminAuth === 'true');
+    setIsClient(clientAuth === 'true');
   }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth');
+    localStorage.removeItem('clientAuth');
+    localStorage.removeItem('clientEmail');
+    setIsAdmin(false);
+    setIsClient(false);
+    navigate('/');
+  };
 
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="h-4 w-4 mr-2" /> },
@@ -38,11 +52,22 @@ export function Navbar() {
     { name: 'Create Ticket', path: '/tickets/new', icon: <TicketPlus className="h-4 w-4 mr-2" /> },
   ];
 
-  const adminLinks = isAdmin ? [
-    { name: 'Admin Dashboard', path: '/admin/dashboard', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
-  ] : [
-    { name: 'Admin Login', path: '/admin/login', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
-  ];
+  const getAuthLinks = () => {
+    if (isAdmin) {
+      return [
+        { name: 'Admin Dashboard', path: '/admin/dashboard', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
+      ];
+    }
+    if (isClient) {
+      return [];
+    }
+    return [
+      { name: 'Client Login', path: '/login', icon: <User className="h-4 w-4 mr-2" /> },
+      { name: 'Admin Login', path: '/admin/login', icon: <ShieldCheck className="h-4 w-4 mr-2" /> }
+    ];
+  };
+
+  const authLinks = getAuthLinks();
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -93,7 +118,7 @@ export function Navbar() {
               </Link>
             ))}
             
-            {adminLinks.map((link) => (
+            {authLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
@@ -108,6 +133,18 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
+            
+            {(isAdmin || isClient) && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout}
+                className="text-sm font-medium text-foreground/80 hover:text-primary"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            )}
             
             <Link to="/tickets/new">
               <Button size="sm" className="ml-2">
@@ -147,7 +184,7 @@ export function Navbar() {
                   </Link>
                 ))}
                 
-                {adminLinks.map((link) => (
+                {authLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
@@ -168,13 +205,24 @@ export function Navbar() {
                   </Link>
                 ))}
                 
-                <div className="mt-4 pt-4 border-t">
+                <div className="mt-4 pt-4 border-t space-y-3">
                   <Link to="/tickets/new" className="w-full">
                     <Button className="w-full">
                       <TicketPlus className="h-4 w-4 mr-2" />
                       Create New Ticket
                     </Button>
                   </Link>
+                  
+                  {(isAdmin || isClient) && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </Button>
+                  )}
                 </div>
               </nav>
             </SheetContent>
