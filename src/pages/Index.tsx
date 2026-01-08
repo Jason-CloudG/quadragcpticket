@@ -18,6 +18,9 @@ import {
   ArrowRight,
   Phone
 } from "lucide-react";
+import heroBackground from "@/assets/hero-background.jpg";
+import servicesBackground from "@/assets/services-background.jpg";
+import ctaBackground from "@/assets/cta-background.jpg";
 
 export default function Index() {
   return (
@@ -26,7 +29,7 @@ export default function Index() {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-background/95 z-10"></div>
         <img 
-          src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7" 
+          src={heroBackground} 
           alt="Code background" 
           className="h-full w-full object-cover object-center"
         />
@@ -111,7 +114,7 @@ export default function Index() {
             <div className="absolute inset-0 z-0">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-background/90 mix-blend-multiply z-10"></div>
               <img 
-                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085" 
+                src={servicesBackground} 
                 alt="Technology background" 
                 className="h-full w-full object-cover object-center"
               />
@@ -133,7 +136,7 @@ export default function Index() {
           <Card className="bg-white/95 backdrop-blur-sm border-primary/20 relative overflow-hidden">
             <div className="absolute inset-0 z-0 opacity-10">
               <img 
-                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" 
+                src={ctaBackground} 
                 alt="User with laptop" 
                 className="h-full w-full object-cover object-center"
               />
