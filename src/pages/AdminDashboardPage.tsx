@@ -54,11 +54,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-export const supportTeam = [
-  "support@gcp-team.com",
-  "devops@gcp-team.com",
-  "iam@gcp-team.com",
-  "network@gcp-team.com"
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  available: boolean;
+}
+
+export const supportTeam: TeamMember[] = [
+  { id: "1", name: "John Smith", email: "support@gcp-team.com", role: "Support Lead", department: "Customer Support", available: true },
+  { id: "2", name: "Sarah Johnson", email: "devops@gcp-team.com", role: "DevOps Engineer", department: "Operations", available: true },
+  { id: "3", name: "Mike Chen", email: "iam@gcp-team.com", role: "Security Specialist", department: "Security", available: false },
+  { id: "4", name: "Emily Davis", email: "network@gcp-team.com", role: "Network Engineer", department: "Infrastructure", available: true },
+  { id: "5", name: "Alex Kumar", email: "cloud@gcp-team.com", role: "Cloud Architect", department: "Architecture", available: true },
+  { id: "6", name: "Lisa Wang", email: "billing@gcp-team.com", role: "Billing Specialist", department: "Finance", available: true },
 ];
 
 export default function AdminDashboardPage() {
@@ -533,7 +544,7 @@ export default function AdminDashboardPage() {
                     
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Assign To
+                        Assign To Team Member
                       </label>
                       <Select 
                         value={selectedTicket.assignedTo || ""}
@@ -550,12 +561,64 @@ export default function AdminDashboardPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="">Unassigned</SelectItem>
-                          {supportTeam.map(email => (
-                            <SelectItem key={email} value={email}>{email}</SelectItem>
+                          {supportTeam.map((member) => (
+                            <SelectItem 
+                              key={member.id} 
+                              value={member.email}
+                              disabled={!member.available}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className={`w-2 h-2 rounded-full ${member.available ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                <span>{member.name}</span>
+                                <span className="text-muted-foreground text-xs">({member.role})</span>
+                              </div>
+                            </SelectItem>
                           ))}
                           <SelectItem value="custom">Add Custom Email</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    {/* Team Member List */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Available Team Members
+                      </label>
+                      <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2">
+                        {supportTeam.map((member) => (
+                          <div 
+                            key={member.id}
+                            className={`flex items-center justify-between p-2 rounded-md hover:bg-accent cursor-pointer transition-colors ${
+                              selectedTicket.assignedTo === member.email ? 'bg-primary/10 border border-primary/30' : 'bg-muted/50'
+                            }`}
+                            onClick={() => member.available && handleAssignTicket(selectedTicket.id, member.email)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                                member.available ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/30 text-muted-foreground'
+                              }`}>
+                                {member.name.split(' ').map(n => n[0]).join('')}
+                              </div>
+                              <div>
+                                <div className="font-medium text-sm">{member.name}</div>
+                                <div className="text-xs text-muted-foreground">{member.role} • {member.department}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {selectedTicket.assignedTo === member.email && (
+                                <Badge variant="secondary" className="text-xs">Assigned</Badge>
+                              )}
+                              <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                member.available 
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                                  : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                              }`}>
+                                {member.available ? 'Available' : 'Busy'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                     
                     {selectedTicket.assignedTo === "custom" && (
