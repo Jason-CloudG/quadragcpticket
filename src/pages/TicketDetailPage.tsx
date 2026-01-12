@@ -52,12 +52,7 @@ import {
   UserPlus,
 } from "lucide-react";
 
-const supportTeam = [
-  "support@gcp-team.com",
-  "devops@gcp-team.com",
-  "iam@gcp-team.com",
-  "network@gcp-team.com"
-];
+import { supportTeam } from "@/pages/AdminDashboardPage";
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -445,8 +440,18 @@ export default function TicketDetailPage() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="">Unassigned</SelectItem>
-                                {supportTeam.map(email => (
-                                  <SelectItem key={email} value={email}>{email}</SelectItem>
+                                {supportTeam.map((member) => (
+                                  <SelectItem 
+                                    key={member.id} 
+                                    value={member.email}
+                                    disabled={!member.available}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className={`w-2 h-2 rounded-full ${member.available ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                      <span>{member.name}</span>
+                                      <span className="text-muted-foreground text-xs">({member.role})</span>
+                                    </div>
+                                  </SelectItem>
                                 ))}
                                 <SelectItem value="custom">Add Custom Email</SelectItem>
                               </SelectContent>
