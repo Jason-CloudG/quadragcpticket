@@ -43,12 +43,18 @@ import {
   AlertCircle,
   Clock, 
   CheckCircle2, 
-  XCircle 
+  XCircle,
+  Hash
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { getTicketById } from "@/lib/ticketData";
+import { toast } from "sonner";
 
 export default function TicketsPage() {
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
+  const [ticketIdSearch, setTicketIdSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
@@ -163,6 +169,51 @@ export default function TicketsPage() {
         </Link>
       </div>
       
+      {/* Ticket ID Lookup */}
+      <Card className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Hash className="h-5 w-5" />
+            Find Ticket by ID
+          </CardTitle>
+          <CardDescription>
+            Enter a ticket ID to quickly view its details
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (ticketIdSearch.trim()) {
+                const ticket = getTicketById(ticketIdSearch.trim());
+                if (ticket) {
+                  navigate(`/tickets/${ticketIdSearch.trim()}`);
+                } else {
+                  toast.error("Ticket not found", {
+                    description: `No ticket found with ID: ${ticketIdSearch.trim()}`
+                  });
+                }
+              }
+            }} 
+            className="flex gap-2"
+          >
+            <div className="relative flex-1 max-w-sm">
+              <Hash className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Enter ticket ID (e.g., TKT-001)"
+                className="pl-8"
+                value={ticketIdSearch}
+                onChange={(e) => setTicketIdSearch(e.target.value)}
+              />
+            </div>
+            <Button type="submit" variant="secondary">
+              Go to Ticket
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1">
           <form onSubmit={handleSearch} className="flex w-full gap-2">
