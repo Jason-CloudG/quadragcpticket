@@ -117,7 +117,7 @@ By automating your ML model deployment on Google Cloud, you can ensure consisten
 
 In future posts, I'll dive deeper into model monitoring and A/B testing deployment strategies on Google Cloud.
     `,
-    coverImage: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+    coverImage: "/blog/cover-ml.jpg",
     date: "2023-06-15",
     author: {
       name: "Alex Thompson",
@@ -222,7 +222,7 @@ Optimizing BigQuery for large-scale analytics requires a combination of proper d
 
 In my next post, I'll explore how to build real-time dashboards on top of BigQuery using Looker and Data Studio.
     `,
-    coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
+    coverImage: "/blog/cover-bigquery.jpg",
     date: "2023-04-23",
     author: {
       name: "Alex Thompson",
@@ -354,7 +354,7 @@ Google Cloud Run provides an excellent platform for serverless microservices, co
 
 In my next post, I'll dive deeper into strategies for implementing resilient error handling and retries in serverless microservices architectures.
     `,
-    coverImage: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
+    coverImage: "/blog/cover-cloudrun.jpg",
     date: "2023-07-18",
     author: {
       name: "Alex Thompson",
@@ -529,7 +529,7 @@ Zero-trust security on Google Cloud is a journey, not a destination. By leveragi
 
 In my next post, I'll explore advanced threat detection techniques using Google's Security Command Center and Chronicle.
     `,
-    coverImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31",
+    coverImage: "/blog/cover-zerotrust.jpg",
     date: "2023-05-11",
     author: {
       name: "Alex Thompson",
@@ -700,7 +700,7 @@ By implementing a combination of these strategies, you can significantly reduce 
 
 In my next post, I'll explore advanced cost optimization techniques using FinOps principles and tools.
     `,
-    coverImage: "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74",
+    coverImage: "/blog/cover-cost.jpg",
     date: "2023-08-30",
     author: {
       name: "Alex Thompson",
@@ -907,7 +907,7 @@ By combining Google Cloud Pub/Sub, Dataflow, and BigQuery, you can build powerfu
 
 In my next post, I'll explore how to add machine learning predictions to real-time data streams using Dataflow and Vertex AI.
     `,
-    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
+    coverImage: "/blog/cover-dataflow.jpg",
     date: "2023-08-01",
     author: {
       name: "Alex Thompson",
