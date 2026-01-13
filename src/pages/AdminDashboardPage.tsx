@@ -79,10 +79,30 @@ export default function AdminDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [customEmail, setCustomEmail] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [adminReply, setAdminReply] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const [newTickets, setNewTickets] = useState<Ticket[]>([]);
+  
+  // Refresh tickets data
+  const refreshTickets = () => {
+    const allTickets = getAllTickets();
+    setTickets(allTickets);
+    
+    // Update selected ticket if one is selected
+    if (selectedTicket) {
+      const refreshedTicket = getTicketById(selectedTicket.id);
+      if (refreshedTicket) {
+        setSelectedTicket(refreshedTicket);
+      }
+    }
+    
+    const newTicketsFiltered = allTickets.filter(ticket => 
+      ticket.status === 'open' && ticket.comments.length === 0
+    );
+    setNewTickets(newTicketsFiltered);
+  };
   
   useEffect(() => {
     const isAdmin = localStorage.getItem("adminAuth") === "true";
@@ -91,13 +111,7 @@ export default function AdminDashboardPage() {
       return;
     }
     
-    const allTickets = getAllTickets();
-    setTickets(allTickets);
-    
-    const newTicketsFiltered = allTickets.filter(ticket => 
-      ticket.status === 'open' && ticket.comments.length === 0
-    );
-    setNewTickets(newTicketsFiltered);
+    refreshTickets();
   }, [navigate]);
   
   const handleLogout = () => {
@@ -123,14 +137,28 @@ export default function AdminDashboardPage() {
         description: `Ticket ${ticketId} status changed to ${newStatus}`,
       });
       
-      setTickets(getAllTickets());
-      
-      if (selectedTicket && selectedTicket.id === ticketId) {
-        const refreshedTicket = getTicketById(ticketId);
-        if (refreshedTicket) {
-          setSelectedTicket(refreshedTicket);
-        }
-      }
+      refreshTickets();
+    }
+  };
+  
+  const handleAddReply = (ticketId: string) => {
+    if (!adminReply.trim()) {
+      toast({
+        title: "Empty reply",
+        description: "Please enter a reply message",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const comment = addComment(ticketId, adminReply.trim(), "Admin Support");
+    if (comment) {
+      toast({
+        title: "Reply added",
+        description: "Your reply has been added to the ticket",
+      });
+      setAdminReply("");
+      refreshTickets();
     }
   };
   
@@ -167,16 +195,8 @@ export default function AdminDashboardPage() {
           : `Ticket ${ticketId} is now unassigned`,
       });
       
-      setTickets(getAllTickets());
-      
-      if (selectedTicket && selectedTicket.id === ticketId) {
-        const refreshedTicket = getTicketById(ticketId);
-        if (refreshedTicket) {
-          setSelectedTicket(refreshedTicket);
-        }
-      }
-      
       setCustomEmail("");
+      refreshTickets();
     }
   };
   
@@ -666,7 +686,29 @@ export default function AdminDashboardPage() {
                       Communication history
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
+                    {/* Admin Reply Form */}
+                    <div className="border rounded-lg p-4 bg-primary/5">
+                      <label className="block text-sm font-medium mb-2">
+                        Add Admin Reply
+                      </label>
+                      <div className="space-y-2">
+                        <textarea
+                          className="w-full min-h-[100px] p-3 border rounded-md bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          placeholder="Type your reply to the customer..."
+                          value={adminReply}
+                          onChange={(e) => setAdminReply(e.target.value)}
+                        />
+                        <Button 
+                          onClick={() => handleAddReply(selectedTicket.id)}
+                          disabled={!adminReply.trim()}
+                        >
+                          Send Reply
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Comments List */}
                     {selectedTicket.comments.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         No comments on this ticket yet
@@ -674,9 +716,26 @@ export default function AdminDashboardPage() {
                     ) : (
                       <div className="space-y-4">
                         {selectedTicket.comments.map(comment => (
-                          <div key={comment.id} className="border rounded-lg p-4 bg-muted/50">
+                          <div 
+                            key={comment.id} 
+                            className={`border rounded-lg p-4 ${
+                              comment.author === 'system' 
+                                ? 'bg-muted/30 border-dashed' 
+                                : comment.author === 'Admin Support'
+                                  ? 'bg-primary/10 border-primary/30'
+                                  : 'bg-muted/50'
+                            }`}
+                          >
                             <div className="flex justify-between items-start mb-2">
-                              <span className="font-medium">{comment.author}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{comment.author}</span>
+                                {comment.author === 'system' && (
+                                  <Badge variant="outline" className="text-xs">System</Badge>
+                                )}
+                                {comment.author === 'Admin Support' && (
+                                  <Badge className="text-xs">Admin</Badge>
+                                )}
+                              </div>
                               <span className="text-xs text-muted-foreground">
                                 {new Date(comment.createdAt).toLocaleString()}
                               </span>
